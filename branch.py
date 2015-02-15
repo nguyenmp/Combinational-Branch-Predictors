@@ -7,7 +7,7 @@ class local_predictor():
         self.history_bits = history_bits
         self.counter_bits = counter_bits
         self.histories = [0] * self.num_entries
-        self.counters = [2 ** (self.counter_bits) - 1] * (2 ** self.history_bits)
+        self.counters = [2 ** (self.counter_bits - 1)] * (2 ** self.history_bits)
 
     def get_prediction(self, pc):
         index = (pc >> 2) % self.num_entries
