@@ -97,32 +97,32 @@ class tournament_predictor():
 
 class singlebit_bimodal_predictor():
     def __init__(self, num_entries):
-	self.num_entries = num_entries
-	self.bimod_table = [0]*self.num_entries
+        self.num_entries = num_entries
+        self.bimod_table = [0]*self.num_entries
 
     def get_prediction(self, pc):
-	index = (pc>>2) % self.num_entries
-	return self.bimod_table[index]
+        index = (pc>>2) % self.num_entries
+        return self.bimod_table[index]
 
     def update(self, pc, branch_outcome):
-	index = (pc>>2) % self.num_entries
-	self.bimod_table[index] = branch_outcome
+        index = (pc>>2) % self.num_entries
+        self.bimod_table[index] = branch_outcome
 
 def main():
-    predictor = global_predictor(12, 2)
+    #predictor = global_predictor(12, 2)
     #predictor = local_predictor(1024, 8, 2)
-    #predictor = singlebit_bimodal_predictor(1024);
+    predictor = singlebit_bimodal_predictor(1024);
     correct_predictions = 0
     total_predictions = 0
     _ = sys.stdin.readline()  # throw away first line
     for line in sys.stdin:
-	# get the two feilds and convert them to integers
-	[pc, branch_outcome] = [int(x,0) for x in line.split()]
-	this_prediction = predictor.get_prediction(pc)
-	total_predictions += 1
-	if this_prediction == branch_outcome:
-	    correct_predictions += 1
-	predictor.update( pc, branch_outcome );
+        # get the two feilds and convert them to integers
+        [pc, branch_outcome] = [int(x,0) for x in line.split()]
+        this_prediction = predictor.get_prediction(pc)
+        total_predictions += 1
+        if this_prediction == branch_outcome:
+            correct_predictions += 1
+        predictor.update( pc, branch_outcome );
     # print out the statistics
     print predictor.__class__.__name__, 100*correct_predictions / float(total_predictions)
 
