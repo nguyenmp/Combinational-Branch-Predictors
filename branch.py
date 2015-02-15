@@ -1,6 +1,34 @@
 #!/usr/bin/python
 import sys
 
+class global_predictor():
+    def __init__(self, history_bits, counter_bits):
+        self.global_history = 0
+        self.history_bits = history_bits
+        self.counter_bits = counter_bits
+        self.counters = [2 ** (self.counter_bits - 1)] * (2 ** self.history_bits)
+
+    def get_prediction(self, pc):
+        index = self.global_history ^ ((pc >> 2) & (2 ** self.history_bits - 1))
+        counter = self.counters[index]
+        return counter >> (self.counter_bits - 1)
+
+    def update(self, pc, branch_outcome):
+        index = self.global_history ^ ((pc >> 2) & (2 ** self.history_bits - 1))
+        
+        # Update the counter
+        counter = self.counters[index]
+        counter += 1 if branch_outcome == 1 else -1
+        if counter < 0:
+            counter = 0;
+        elif counter >= 2 ** self.counter_bits:
+            counter = 2 ** self.counter_bits - 1
+        self.counters[index] = counter;
+
+        # Update global history
+        self.global_history = (self.global_history << 1 | branch_outcome) & (2 ** (self.history_bits) - 1)
+
+
 class local_predictor():
     def __init__(self, num_entries, history_bits, counter_bits):
         self.num_entries = num_entries
@@ -42,9 +70,9 @@ class singlebit_bimodal_predictor():
 	index = (pc>>2) % self.num_entries
 	self.bimod_table[index] = branch_outcome
 
-
 def main():
-    predictor = local_predictor(1024, 8, 2)
+    predictor = global_predictor(12, 2)
+    #predictor = local_predictor(1024, 8, 2)
     #predictor = singlebit_bimodal_predictor(1024);
     correct_predictions = 0
     total_predictions = 0
