@@ -137,7 +137,7 @@ def main(which):
     # print out the statistics
     max_item = reduce(lambda x, y: x if x[1] > y[1] else y, hist.items())
     print "pc: " + format(int(max_item[0]), '#08x') + " misses: " + str(max_item[1])
-    print predictor.__class__.__name__, 100*correct_predictions / float(total_predictions)
+    print predictor.__class__.__name__, 100.0 - 100*correct_predictions / float(total_predictions)
 
 if __name__ == "__main__":
    main(int(sys.argv[1]))
