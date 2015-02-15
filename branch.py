@@ -79,7 +79,7 @@ class tournament_predictor():
         pgc = 1 if branch_outcome == g_prediction else 0
 
         l_prediction = self.l_predictor.get_prediction(pc)
-        plc = 1 if branch_outcome == g_prediction else 0
+        plc = 1 if branch_outcome == l_prediction else 0
 
         counter = self.counters[self.global_history]
         counter += (pgc - plc)
@@ -108,13 +108,22 @@ class singlebit_bimodal_predictor():
         index = (pc>>2) % self.num_entries
         self.bimod_table[index] = branch_outcome
 
-def main():
-    #predictor = global_predictor(12, 2)
-    #predictor = local_predictor(1024, 8, 2)
-    predictor = singlebit_bimodal_predictor(1024);
+def main(which):
+    if which == 0:
+        predictor = tournament_predictor(1024, 2)
+    elif which == 1:
+        predictor = global_predictor(12, 2)
+    elif which == 2:
+        predictor = local_predictor(1024, 8, 2)
+    else:
+        predictor = singlebit_bimodal_predictor(1024);
+
     correct_predictions = 0
     total_predictions = 0
     _ = sys.stdin.readline()  # throw away first line
+
+    hist = {}
+
     for line in sys.stdin:
         # get the two feilds and convert them to integers
         [pc, branch_outcome] = [int(x,0) for x in line.split()]
@@ -122,9 +131,13 @@ def main():
         total_predictions += 1
         if this_prediction == branch_outcome:
             correct_predictions += 1
+        else:
+            hist[str(pc)] = 1 if str(pc) not in hist else hist[str(pc)] + 1
         predictor.update( pc, branch_outcome );
     # print out the statistics
+    max_item = reduce(lambda x, y: x if x[1] > y[1] else y, hist.items())
+    print "pc: " + format(int(max_item[0]), '#08x') + " misses: " + str(max_item[1])
     print predictor.__class__.__name__, 100*correct_predictions / float(total_predictions)
 
 if __name__ == "__main__":
-   main()
+   main(int(sys.argv[1]))
