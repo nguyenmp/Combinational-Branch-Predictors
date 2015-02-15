@@ -7,7 +7,7 @@ class local_predictor():
         self.history_bits = history_bits
         self.counter_bits = counter_bits
         self.histories = [0] * self.num_entries
-        self.counters = [0] * (2 ** self.history_bits)
+        self.counters = [2 ** (self.counter_bits) - 1] * (2 ** self.history_bits)
 
     def get_prediction(self, pc):
         index = (pc >> 2) % self.num_entries
@@ -29,8 +29,6 @@ class local_predictor():
         history = (history << 1 | branch_outcome) & (2 ** (self.history_bits) - 1)
         self.histories[index] = history
 
-
-
 class singlebit_bimodal_predictor():
     def __init__(self, num_entries):
 	self.num_entries = num_entries
@@ -46,7 +44,7 @@ class singlebit_bimodal_predictor():
 
 
 def main():
-    predictor = local_predictor(1024, 8, 256)
+    predictor = local_predictor(1024, 8, 2)
     #predictor = singlebit_bimodal_predictor(1024);
     correct_predictions = 0
     total_predictions = 0
