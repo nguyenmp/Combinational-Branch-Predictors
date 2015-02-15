@@ -57,6 +57,44 @@ class local_predictor():
         history = (history << 1 | branch_outcome) & (2 ** (self.history_bits) - 1)
         self.histories[index] = history
 
+
+class tournament_predictor():
+    def __init__(self, num_entries, counter_bits):
+        self.global_history = 0 
+        self.num_entries = num_entries
+        self.counter_bits = counter_bits
+        self.counters = [2 ** (self.counter_bits - 1)] * (num_entries)
+        self.g_predictor = global_predictor(12, 2)
+        self.l_predictor = local_predictor(1024, 8, 2)
+
+    def get_prediction(self, pc):
+        counter = self.counters[self.global_history]
+        if counter >> (self.counter_bits - 1) == 1:
+            return self.g_predictor.get_prediction(pc)
+        else:
+            return self.l_predictor.get_prediction(pc)
+
+    def update(self, pc, branch_outcome):
+        g_prediction = self.g_predictor.get_prediction(pc)
+        pgc = 1 if branch_outcome == g_prediction else 0
+
+        l_prediction = self.l_predictor.get_prediction(pc)
+        plc = 1 if branch_outcome == g_prediction else 0
+
+        counter = self.counters[self.global_history]
+        counter += (pgc - plc)
+        if counter < 0:
+            counter = 0;
+        elif counter >= 2 ** self.counter_bits:
+            counter = 2 ** self.counter_bits - 1 
+        self.counters[self.global_history] = counter
+
+        self.global_history = (self.global_history << 1 | branch_outcome) % self.num_entries
+    
+        self.g_predictor.update(pc, branch_outcome)
+        self.l_predictor.update(pc, branch_outcome)
+
+
 class singlebit_bimodal_predictor():
     def __init__(self, num_entries):
 	self.num_entries = num_entries
